@@ -1,6 +1,8 @@
 import requests
 import telebot
 import json
+import time
+import ip
 
 
 """
@@ -31,7 +33,7 @@ if config["save_file_path"] == "":
 
 if config["proxy"] != "":
     proxy_string = config["proxy"].lower().split(":", 4)
-    telebot.apihelper.proxy = {proxy_string[0]: proxy_string[1] + "://" + proxy_string[2] + ":" + proxy_string[3]}
+    telebot.apihelper.proxy = {proxy_string[0].lower(): proxy_string[1] + "://" + proxy_string[2] + ":" + proxy_string[3]}
     print(telebot.apihelper.proxy)
     print("Proxy setup complete!")
 else:
@@ -46,7 +48,7 @@ else:
 
 def check_chat_id(chat_id):
     if config["interact_with"]:
-        if chat_id not in config["interact_with"]:
+        if str(chat_id) not in config["interact_with"]:
             return False
     return True
 
@@ -54,7 +56,33 @@ def check_chat_id(chat_id):
 @bot.message_handler(commands=["start"])
 def start_message(message):
     if check_chat_id(message.chat.id):
-        bot.send_message(message.chat.id, "Hello, World!")
+        f = open(config.save_file_path, "+")
+        saves = json.loads(f.read())
+        saves.ip_info_getters.append(message.chat.id)
+        f.write(json.dumps(saves))
+        f.close()
+        bot.reply_to(message, """Added this chat_id to list of getters ip change info. 
+                                            For more commands use /help""")
 
 
-bot.polling()
+print("Bot starting...")
+timer = 0
+while True:
+    time.sleep(5)
+    timer += 5
+    try:
+        bot.polling(none_stop=False)
+    except Exception as e:
+        print("Polling error: " + e)
+        time.sleep(300)
+        timer += 300
+    if timer >= 600:
+        ip = ip.check_ip_change(config.save_file_path)
+        if ip is not None:
+            f = open(config.save_file_path, "r")
+            saves = json.loads(f.read())
+            f.close()
+            chat_ids = saves.ip_info_getters
+            for chat_id in chat_ids:
+                bot.send_message(chat_id, "Ip changed. New is: " + ip)
+        timer = 0
