@@ -5,6 +5,7 @@ import time
 import ip
 import saving
 import bot_handlers
+import messages
 
 
 """
@@ -86,7 +87,7 @@ while True:
         time.sleep(300)
         timer += 300
     # Check if its time to check ip - check it and send msg if it was changed
-    if timer >= 600:
+    if timer >= 300:
         ip = ip.check_ip_change(config["save_file_path"])
         if ip is not None:
             f = open(config["save_file_path"], "r")
@@ -94,8 +95,7 @@ while True:
             f.close()
             chat_ids = saves["ip_info_getters"]
             for chat_id in chat_ids:
-                bot.send_message(chat_id, "Ip changed. New is: " + ip)
+                bot.send_message(chat_id, messages.send_ip_change(ip))
         timer = 0
-    time.sleep(5)
     saving.set_offset(config["save_file_path"], offset)
     timer += 1

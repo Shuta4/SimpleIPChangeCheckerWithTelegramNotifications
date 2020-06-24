@@ -1,5 +1,6 @@
 import saving
 import ip
+import messages
 
 
 def check_chat_id(config, chat_id):
@@ -15,7 +16,9 @@ def text_message_handler(config, bot, message):
             return False
         if message.text == "/start":
             saving.add_chat_id_to_info_getters_list(config["save_file_path"], message.chat.id)
-            bot.reply_to(message, """Added this chat_id to list of getters ip change info. 
-For more commands use /help""")
+            bot.reply_to(message, messages.start_message)
+        elif message.text == "/help":
+            bot.reply_to(message, messages.help_message)
         elif message.text == "/getip":
-            bot.reply_to(message, "IP is " + ip.get_ip())
+            bot.reply_to(message, messages.send_ip(ip.get_ip()))
+    return True
