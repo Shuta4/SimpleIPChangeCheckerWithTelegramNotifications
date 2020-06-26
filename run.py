@@ -88,14 +88,14 @@ while True:
         timer += 300
     # Check if its time to check ip - check it and send msg if it was changed
     if timer >= 300:
-        ip = ip.check_ip_change(config["save_file_path"])
-        if ip is not None:
+        current_ip = ip.check_ip_change(config["save_file_path"])
+        if current_ip is not None:
             f = open(config["save_file_path"], "r")
             saves = json.loads(f.read())
             f.close()
             chat_ids = saves["ip_info_getters"]
             for chat_id in chat_ids:
-                bot.send_message(chat_id, messages.send_ip_change(ip))
+                bot.send_message(chat_id, messages.send_ip_change(current_ip))
         timer = 0
     saving.set_offset(config["save_file_path"], offset)
     timer += 1
